@@ -10,9 +10,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 app = FastAPI(
-    title="AluQuote",
+    title="Front of House Calculator-1",
     version="0.1.0",
-    description="Reception-focused quoting API and frontend for AluQuote.",
+    description="Reception-focused quoting API and frontend for the Anglo Windows Front of House Calculator.",
 )
 
 app.include_router(api_router)

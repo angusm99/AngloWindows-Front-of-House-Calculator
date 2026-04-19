@@ -1076,16 +1076,16 @@ function openQuotePreview(shouldPrint) {
     <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>${escapeHtml(state.quote.quote_number || "AluQuote Preview")}</title>
+        <title>${escapeHtml(state.quote.quote_number || "Front of House Calculator-1 Preview")}</title>
         <link rel="stylesheet" href="/static/styles.css" />
       </head>
       <body>
         <main class="preview-document">
           <header>
             <div>
-              <p class="eyebrow">AluQuote</p>
+              <p class="eyebrow">Anglo Windows</p>
               <h1>Mini Quote</h1>
-              <p class="muted">Professional reception quote generated from AluQuote.</p>
+              <p class="muted">Professional reception quote generated from Front of House Calculator-1.</p>
             </div>
             <div>
               <strong>${escapeHtml(state.quote.quote_number || "Pending save")}</strong>
@@ -1153,12 +1153,12 @@ function emailQuote() {
     return;
   }
   const totals = computeQuoteTotals();
-  const subject = encodeURIComponent(`AluQuote Quote ${state.quote.quote_number || ""}`.trim());
+  const subject = encodeURIComponent(`Front of House Quote ${state.quote.quote_number || ""}`.trim());
   const body = encodeURIComponent(
     [
       `Dear ${state.quote.customer_name},`,
       "",
-      "Please find your AluQuote mini quote summary below.",
+      "Please find your Front of House Calculator-1 mini quote summary below.",
       "",
       `Quote Number: ${state.quote.quote_number || "Pending save"}`,
       `Total: ${currency(totals.total)}`,
@@ -1166,7 +1166,7 @@ function emailQuote() {
       "A PDF version can be exported from the calculator and attached before sending.",
       "",
       "Kind regards,",
-      state.quote.salesperson || "AluQuote Desk",
+      state.quote.salesperson || "Anglo Windows Reception Desk",
     ].join("\n"),
   );
   window.location.href = `mailto:?subject=${subject}&body=${body}`;

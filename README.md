@@ -1,6 +1,6 @@
-# AluQuote
+# Front of House Calculator-1
 
-This repository contains the AluQuote reception quote calculator, rebuilt locally from the latest Manus project files and organized as a FastAPI-served browser app.
+This repository contains Front of House Calculator-1, the Anglo Windows reception quote calculator rebuilt locally from the latest Manus project files and organized as a FastAPI-served browser app.
 
 ## What is in this repo
 
@@ -68,7 +68,7 @@ Then open:
 ## GitHub notes
 
 - The main working branch is `main`
-- This repo is connected to the GitHub repository `angusm99/AluQuote`
+- This repo is connected to the GitHub repository `angusm99/AngloWindows-intranet`
 - The easiest daily workflow is: edit locally, test locally, then commit and push `main`
 - Start with `docs/GITHUB_QUICKSTART.md` if you want the simplest Git/GitHub flow
 - See `CONTRIBUTING.md` for the recommended local-to-GitHub workflow

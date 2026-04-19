@@ -2,7 +2,7 @@
 
 This project is connected to:
 
-- `https://github.com/angusm99/AluQuote`
+- `https://github.com/angusm99/AngloWindows-intranet`
 
 ## Everyday workflow
 

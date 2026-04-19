@@ -1,6 +1,6 @@
 # Google Drive Asset Inventory
 
-Latest AluQuote assets confirmed on Google Drive during this sync:
+Latest Front of House Calculator-1 assets confirmed on Google Drive during this sync:
 
 ## Primary frontend package
 
@@ -23,5 +23,6 @@ Latest AluQuote assets confirmed on Google Drive during this sync:
 
 ## Notes
 
+- Some source files on Drive still use the older `AluQuote` naming, but they are being used here as source material for the Anglo Windows front-of-house calculator.
 - Older HTML snapshots also exist on Drive (`v4` through `v8`), but `aluquote-mvp.html` is the newest obvious application package by modified timestamp.
 - The Drive connector was able to inspect the current files, but authenticated raw byte download into the workspace was blocked in shell by Google's sign-in flow.
