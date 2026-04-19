@@ -156,21 +156,3 @@ class Quote:
     discount_zar: Decimal
     total_zar: Decimal
     lines: list[QuoteLine]
-
-
-@dataclass(slots=True)
-class StockLevel:
-    material_code: str
-    description: str
-    on_hand: Decimal
-    unit: str
-
-
-@dataclass(slots=True)
-class StockTransaction:
-    id: int
-    material_code: str
-    quantity: Decimal
-    transaction_type: str
-    reference: str | None
-    occurred_at: datetime

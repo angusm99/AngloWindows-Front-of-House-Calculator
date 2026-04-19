@@ -1,14 +1,14 @@
-# Anglo Windows Master Calculator - Reception User Guide
+# Front of House Calculator-1 - Reception User Guide
 
 **For:** Reception Staff & Front Desk  
-**Purpose:** Quick reference guide for generating quotes using the Anglo Windows Master Calculator  
+**Purpose:** Quick reference guide for generating quotes using Front of House Calculator-1  
 **Version:** 1.0
 
 ---
 
 ## What This Tool Does
 
-The **Anglo Windows Master Calculator** is a fast, simple way to generate accurate quotes for customers. You can:
+**Front of House Calculator-1** is a fast, simple way to generate accurate quotes for customers. You can:
 
 - **Upload architectural drawings** and automatically extract product specifications
 - **Manually enter product details** if you don't have a drawing
@@ -22,8 +22,8 @@ The **Anglo Windows Master Calculator** is a fast, simple way to generate accura
 
 ### Logging In
 
-1. Open the Anglo Windows Master Calculator in your browser
-2. Click **"Login with Manus"** (or your company SSO)
+1. Open Front of House Calculator-1 in your browser
+2. Click **"Sign in with Google"** (or your company SSO)
 3. Enter your credentials
 4. You're ready to start generating quotes
 
@@ -433,7 +433,7 @@ A: That's a sales question for your supervisor. The calculator generates quotes 
 **Print this and keep at your desk:**
 
 ```
-ANGLO WINDOWS MASTER CALCULATOR - QUICK START
+FRONT OF HOUSE CALCULATOR-1 - QUICK START
 
 1. UPLOAD DRAWING
    → Click "Upload Drawing" → Select PDF → Review table → Confirm

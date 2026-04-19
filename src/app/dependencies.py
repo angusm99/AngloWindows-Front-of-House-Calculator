@@ -1,10 +1,9 @@
 from functools import lru_cache
 
-from app.repositories import InMemoryProductRepository, InMemoryQuoteRepository, InMemoryStockRepository
+from app.repositories import InMemoryProductRepository, InMemoryQuoteRepository
 from app.services.calculation import CalculationService, HybridCalculationEngine
 from app.services.products import ProductService
 from app.services.quotes import QuoteService
-from app.services.stock import StockService
 
 
 @lru_cache
@@ -15,11 +14,6 @@ def get_product_repository() -> InMemoryProductRepository:
 @lru_cache
 def get_quote_repository() -> InMemoryQuoteRepository:
     return InMemoryQuoteRepository()
-
-
-@lru_cache
-def get_stock_repository() -> InMemoryStockRepository:
-    return InMemoryStockRepository()
 
 
 @lru_cache
@@ -35,8 +29,3 @@ def get_calculation_service() -> CalculationService:
 @lru_cache
 def get_quote_service() -> QuoteService:
     return QuoteService(get_quote_repository())
-
-
-@lru_cache
-def get_stock_service() -> StockService:
-    return StockService(get_stock_repository())

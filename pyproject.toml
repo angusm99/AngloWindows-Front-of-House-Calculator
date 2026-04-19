@@ -1,7 +1,7 @@
 [project]
-name = "fenestration-costing-api"
+name = "front-of-house-calculator-1"
 version = "0.1.0"
-description = "FastAPI backend for fenestration costing, quoting, and stock management."
+description = "FastAPI backend for the Front of House Calculator-1 reception quoting workflow."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115,<1.0",

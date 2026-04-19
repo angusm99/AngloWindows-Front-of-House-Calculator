@@ -1,6 +1,6 @@
-# Anglo Windows Master Calculator - AI Studio Handoff
+# Front of House Calculator-1 - AI Studio Handoff
 
-**Project:** Anglo Windows Master Calculator (Reception Quote Generator)  
+**Project:** Front of House Calculator-1 (Reception Quote Generator)  
 **Status:** Phase 2 - Ready for Architecture Implementation  
 **Last Updated:** April 2026  
 **Handoff To:** AI Studio Development Team
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Anglo Windows Master Calculator is a **reception-focused quote generator** that enables staff to quickly generate accurate quotes from architectural drawings or manual input. The app extracts product specifications from PDF schedules, matches them to pre-built Bizman quote templates, and generates mini quotes for client delivery.
+Front of House Calculator-1 is a **reception-focused quote generator** that enables staff to quickly generate accurate quotes from architectural drawings or manual input. The app extracts product specifications from PDF schedules, matches them to pre-built Bizman quote templates, and generates mini quotes for client delivery.
 
 **Current Status:**
 - ✅ Phase 1 Complete: PDF extraction and inline-editable review table working

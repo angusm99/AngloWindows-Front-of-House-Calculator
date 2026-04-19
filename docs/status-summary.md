@@ -21,7 +21,6 @@
 - Finished-goods template pricing imported from the provided CSV and used as the first lookup path
 - PDF upload intake route backed by the Manus `pdf_intake.py` parser
 - Quote save and reload flow backed by in-memory repositories
-- Stock level and stock transaction endpoints
 
 ## Partially built
 

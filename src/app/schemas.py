@@ -253,26 +253,3 @@ class QuoteSummaryResponse(BaseModel):
     created_at: datetime
     total_zar: Decimal
     line_count: int
-
-
-class StockLevelResponse(BaseModel):
-    material_code: str
-    description: str
-    on_hand: Decimal
-    unit: str
-
-
-class StockTransactionCreateRequest(BaseModel):
-    material_code: str = Field(min_length=1)
-    quantity: Decimal = Field(gt=0)
-    transaction_type: str = Field(min_length=1)
-    reference: str | None = None
-
-
-class StockTransactionResponse(BaseModel):
-    id: int
-    material_code: str
-    quantity: Decimal
-    transaction_type: str
-    reference: str | None
-    occurred_at: datetime

@@ -7,7 +7,6 @@ from app.dependencies import (
     get_calculation_service,
     get_product_service,
     get_quote_service,
-    get_stock_service,
 )
 from app.schemas import (
     CalculatorOptionsResponse,
@@ -19,16 +18,12 @@ from app.schemas import (
     QuoteCreateRequest,
     QuoteResponse,
     QuoteSummaryResponse,
-    StockLevelResponse,
-    StockTransactionCreateRequest,
-    StockTransactionResponse,
     SystemGroupsResponse,
 )
 from app.services.calculation import CalculationService, CatalogLookupError
 from app.services.pdf_uploads import PdfIntakeUnavailableError, extract_pdf_upload_rows
 from app.services.products import ProductNotFoundError, ProductService
 from app.services.quotes import QuoteNotFoundError, QuoteService
-from app.services.stock import StockService
 
 
 api_router = APIRouter(prefix="/api")
@@ -126,20 +121,3 @@ def get_quote(
         return service.get_quote(quote_id)
     except QuoteNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-
-
-@api_router.get("/stock/levels", response_model=list[StockLevelResponse])
-def list_stock_levels(service: StockService = Depends(get_stock_service)) -> list[StockLevelResponse]:
-    return service.list_levels()
-
-
-@api_router.post(
-    "/stock/transactions",
-    response_model=StockTransactionResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_stock_transaction(
-    request: StockTransactionCreateRequest,
-    service: StockService = Depends(get_stock_service),
-) -> StockTransactionResponse:
-    return service.record_transaction(request)

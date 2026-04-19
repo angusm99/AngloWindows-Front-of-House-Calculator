@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Anglo Windows Master Calculator** – A reception-focused quote generator that enables staff to quickly generate accurate quotes from architectural drawings or manual input.
+**Front of House Calculator-1** – A reception-focused quote generator that enables staff to quickly generate accurate quotes from architectural drawings or manual input.
 
 **User:** Reception staff and front desk  
 **Purpose:** Generate professional mini quotes for customers in under 5 minutes  

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timezone
-from decimal import Decimal
 
-from app.domain import GlassOption, Product, ProductGroup, ProductSystem, Quote, StockLevel, StockTransaction
+from app.domain import GlassOption, Product, ProductGroup, ProductSystem, Quote
 from app.engines.data import GLASS_OPTIONS, SYSTEM_GROUPS
 
 
@@ -30,14 +29,6 @@ class QuoteRepository:
         raise NotImplementedError
 
     def get_quote(self, quote_id: int) -> Quote | None:
-        raise NotImplementedError
-
-
-class StockRepository:
-    def list_levels(self) -> list[StockLevel]:
-        raise NotImplementedError
-
-    def record_transaction(self, transaction: StockTransaction) -> StockTransaction:
         raise NotImplementedError
 
 
@@ -143,41 +134,3 @@ class InMemoryQuoteRepository(QuoteRepository):
         quote_number = f"AW-{today}-{self._next_quote_number:03d}"
         self._next_quote_number += 1
         return quote_number
-
-
-class InMemoryStockRepository(StockRepository):
-    def __init__(self) -> None:
-        self._levels = {
-            "CW3040-BRONZE": StockLevel("CW3040-BRONZE", "30.5 Frame - Bronze", Decimal("18"), "bar"),
-            "CW3041-BRONZE": StockLevel("CW3041-BRONZE", "30.5 Sash - Bronze", Decimal("24"), "bar"),
-            "WP48/500": StockLevel("WP48/500", "Woolpile", Decimal("320"), "m"),
-        }
-        self._transactions: list[StockTransaction] = []
-        self._next_id = 1
-
-    def list_levels(self) -> list[StockLevel]:
-        return list(self._levels.values())
-
-    def record_transaction(self, transaction: StockTransaction) -> StockTransaction:
-        stored = replace(
-            transaction,
-            id=self._next_id,
-            occurred_at=transaction.occurred_at or datetime.now(timezone.utc),
-        )
-        self._transactions.append(stored)
-        self._next_id += 1
-
-        level = self._levels.get(stored.material_code)
-        if level is None:
-            unit = "unit"
-            self._levels[stored.material_code] = StockLevel(
-                material_code=stored.material_code,
-                description=stored.material_code,
-                on_hand=stored.quantity,
-                unit=unit,
-            )
-        else:
-            delta = stored.quantity if stored.transaction_type in {"receipt", "adjustment_in"} else -stored.quantity
-            level.on_hand += delta
-
-        return stored

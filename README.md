@@ -28,7 +28,7 @@ imports/          Extracted Manus source snapshots kept for reference and portin
 - Hybrid pricing engine across the 8 supported Anglo system groups
 - Finished-goods template lookup sourced from the supplied CSV
 - `/api/pdf-intake` route backed by Manus `pdf_intake.py`
-- Quote save/load endpoints plus stock and inventory support routes
+- Quote save and load endpoints for reception workflow drafts
 
 ## Imported Manus material
 
