@@ -48,6 +48,6 @@ if (-not $SkipInstall) {
     & $venvPython -m pip install fastapi "pydantic>=2.8,<3.0" "uvicorn>=0.30,<1.0" "pdfplumber>=0.11,<1.0" "python-multipart>=0.0.9,<1.0"
 }
 
-Write-Host "Starting Anglo Windows Master Cost Calculator..." -ForegroundColor Green
+Write-Host "Starting AluQuote..." -ForegroundColor Green
 Set-Location $projectRoot
 & $venvPython -m uvicorn app.main:app --app-dir src --reload

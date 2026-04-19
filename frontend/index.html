@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Anglo Windows Master Cost Calculator</title>
+    <title>AluQuote</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
@@ -11,12 +11,12 @@
       <section class="hero card hero-shell">
         <div class="hero-lead">
           <div class="hero-badges">
-            <span class="hero-badge hero-badge-primary">Anglo Windows Internal Tool</span>
+            <span class="hero-badge hero-badge-primary">AluQuote Workspace</span>
             <span class="hero-badge">Faster intake, calmer workflow</span>
           </div>
 
           <div class="hero-title-block">
-            <img class="brand-logo hero-logo" src="/static/Anglo_LOGO.png" alt="Anglo Windows" />
+            <div class="hero-wordmark" aria-label="AluQuote">ALUQUOTE</div>
             <div>
               <p class="eyebrow">Reception Quote Workspace</p>
               <h1>Start a new quote</h1>
@@ -150,6 +150,62 @@
             </div>
           </div>
         </article>
+
+        <section id="landing-support-panels" class="landing-support-grid">
+          <article class="card section-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">What Happens Next</p>
+                <h2>Draft flow at a glance</h2>
+              </div>
+            </div>
+            <p class="muted">
+              After upload, the draft quote is prefilled for review. After manual entry, the full
+              builder opens with guided job, unit, pricing, and export sections.
+            </p>
+            <div class="inline-metric-grid">
+              <div class="inline-metric-card">
+                <p class="inline-metric-label">Document-assisted intake</p>
+                <p class="inline-metric-value">Best for emailed plans</p>
+              </div>
+              <div class="inline-metric-card">
+                <p class="inline-metric-label">Manual builder</p>
+                <p class="inline-metric-value">Best for live reception capture</p>
+              </div>
+              <div class="inline-metric-card">
+                <p class="inline-metric-label">Output</p>
+                <p class="inline-metric-value">Saved draft plus PDF quote</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="card section-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Draft Snapshot</p>
+                <h2>Current draft health</h2>
+              </div>
+            </div>
+            <div class="draft-snapshot-grid">
+              <div class="snapshot-card">
+                <p class="snapshot-label">Quote number</p>
+                <p id="landing-quote-number" class="snapshot-value">Unsaved quote</p>
+              </div>
+              <div class="snapshot-card">
+                <p class="snapshot-label">Customer</p>
+                <p id="landing-customer-name" class="snapshot-value">Waiting for intake</p>
+              </div>
+              <div class="snapshot-card">
+                <p class="snapshot-label">Lines in draft</p>
+                <p id="landing-line-count" class="snapshot-value">0</p>
+              </div>
+              <div class="snapshot-card snapshot-card-accent">
+                <p class="snapshot-label">Draft total</p>
+                <p id="landing-draft-total" class="snapshot-value">R 0.00</p>
+              </div>
+            </div>
+          </article>
+        </section>
 
         <section id="builder-workspace" class="workspace hidden">
           <div class="main-column">

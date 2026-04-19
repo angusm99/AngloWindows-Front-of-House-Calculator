@@ -85,6 +85,10 @@ function bindElements() {
     "hero-units-count",
     "hero-subtotal",
     "hero-total",
+    "landing-quote-number",
+    "landing-customer-name",
+    "landing-line-count",
+    "landing-draft-total",
     "tab-builder",
     "tab-saved",
     "tab-pricing",
@@ -334,6 +338,13 @@ function renderHeroMetrics(totals) {
   elements.heroUnitsCount.textContent = String(state.quote.lines.length);
   elements.heroSubtotal.textContent = currency(totals.subtotal);
   elements.heroTotal.textContent = currency(totals.total);
+}
+
+function renderLandingSnapshot(totals) {
+  elements.landingQuoteNumber.textContent = state.quote.quote_number || "Unsaved quote";
+  elements.landingCustomerName.textContent = state.quote.customer_name || "Waiting for intake";
+  elements.landingLineCount.textContent = String(state.quote.lines.length);
+  elements.landingDraftTotal.textContent = currency(totals.total);
 }
 
 function hydrateFormOptions() {
@@ -799,6 +810,7 @@ function renderQuoteWorkspace() {
   syncQuoteHeaderToState();
   const totals = computeQuoteTotals();
   renderHeroMetrics(totals);
+  renderLandingSnapshot(totals);
   elements.summaryQuoteNumber.textContent = state.quote.quote_number || "Unsaved quote";
   elements.subtotalValue.textContent = currency(totals.subtotal);
   elements.markupValue.textContent = currency(totals.markup);
@@ -1064,16 +1076,16 @@ function openQuotePreview(shouldPrint) {
     <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>${escapeHtml(state.quote.quote_number || "Anglo Quote Preview")}</title>
+        <title>${escapeHtml(state.quote.quote_number || "AluQuote Preview")}</title>
         <link rel="stylesheet" href="/static/styles.css" />
       </head>
       <body>
         <main class="preview-document">
           <header>
             <div>
-              <p class="eyebrow">Anglo Windows</p>
+              <p class="eyebrow">AluQuote</p>
               <h1>Mini Quote</h1>
-              <p class="muted">Professional reception quote generated from the Master Calculator.</p>
+              <p class="muted">Professional reception quote generated from AluQuote.</p>
             </div>
             <div>
               <strong>${escapeHtml(state.quote.quote_number || "Pending save")}</strong>
@@ -1141,12 +1153,12 @@ function emailQuote() {
     return;
   }
   const totals = computeQuoteTotals();
-  const subject = encodeURIComponent(`Anglo Windows Quote ${state.quote.quote_number || ""}`.trim());
+  const subject = encodeURIComponent(`AluQuote Quote ${state.quote.quote_number || ""}`.trim());
   const body = encodeURIComponent(
     [
       `Dear ${state.quote.customer_name},`,
       "",
-      "Please find your Anglo Windows mini quote summary below.",
+      "Please find your AluQuote mini quote summary below.",
       "",
       `Quote Number: ${state.quote.quote_number || "Pending save"}`,
       `Total: ${currency(totals.total)}`,
@@ -1154,7 +1166,7 @@ function emailQuote() {
       "A PDF version can be exported from the calculator and attached before sending.",
       "",
       "Kind regards,",
-      state.quote.salesperson || "Reception Desk",
+      state.quote.salesperson || "AluQuote Desk",
     ].join("\n"),
   );
   window.location.href = `mailto:?subject=${subject}&body=${body}`;

@@ -10,9 +10,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 app = FastAPI(
-    title="Anglo Windows Master Cost Calculator",
+    title="AluQuote",
     version="0.1.0",
-    description="Reception-focused quoting API and frontend for Anglo Windows.",
+    description="Reception-focused quoting API and frontend for AluQuote.",
 )
 
 app.include_router(api_router)

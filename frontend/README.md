@@ -1,6 +1,6 @@
 # Frontend
 
-This folder now contains the local Anglo Windows reception calculator frontend.
+This folder now contains the local AluQuote reception calculator frontend.
 
 ## Current files
 
