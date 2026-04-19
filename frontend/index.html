@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anglo Windows Master Cost Calculator</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero card hero-shell">
+        <div class="hero-lead">
+          <div class="hero-badges">
+            <span class="hero-badge hero-badge-primary">Anglo Windows Internal Tool</span>
+            <span class="hero-badge">Faster intake, calmer workflow</span>
+          </div>
+
+          <div class="hero-title-block">
+            <img class="brand-logo hero-logo" src="/static/Anglo_LOGO.png" alt="Anglo Windows" />
+            <div>
+              <p class="eyebrow">Reception Quote Workspace</p>
+              <h1>Start a new quote</h1>
+            </div>
+          </div>
+
+          <p class="hero-copy">
+            Begin with a document for assisted extraction, or open the manual builder and
+            capture the quote step by step. The full pricing workspace stays out of the way
+            until you need it.
+          </p>
+
+          <div class="hero-tags hero-metrics">
+            <span class="tag">Units in draft · <strong id="hero-units-count">0</strong></span>
+            <span class="tag">Subtotal · <strong id="hero-subtotal">R 0.00</strong></span>
+            <span class="tag">Quote total · <strong id="hero-total">R 0.00</strong></span>
+          </div>
+
+          <div class="hero-intake-grid">
+            <article class="intake-card">
+              <div>
+                <p class="eyebrow">Document Intake</p>
+                <h3>Upload and prefill</h3>
+              </div>
+              <p class="muted">
+                Upload a PDF drawing and let the calculator extract likely schedule rows into
+                a review table before pricing.
+              </p>
+              <button id="hero-upload-button" type="button" class="primary-button">
+                Upload document
+              </button>
+              <div class="intake-meta">
+                <p id="hero-upload-status">Supported format: PDF drawing schedules.</p>
+                <p id="hero-extraction-summary" class="accent-copy"></p>
+              </div>
+            </article>
+
+            <article class="intake-card intake-card-alt">
+              <div>
+                <p class="eyebrow">Guided Capture</p>
+                <h3>Manual entry</h3>
+              </div>
+              <p class="muted">
+                Open the full builder when reception needs to capture the job header and
+                products from scratch.
+              </p>
+              <button id="hero-manual-button" type="button" class="secondary-button">
+                Open manual builder
+              </button>
+              <p class="muted">
+                Best for walk-in enquiries, phone calls, or quick revisions while the customer
+                is waiting.
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <article class="card side-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Navigation</p>
+                <h2>Workspace tabs</h2>
+              </div>
+            </div>
+            <div class="nav-tab-list">
+              <button id="tab-builder" type="button" class="nav-tab is-active">Quote Builder</button>
+              <button id="tab-saved" type="button" class="nav-tab">Saved Quotes</button>
+              <button id="tab-pricing" type="button" class="nav-tab">Price Book</button>
+            </div>
+          </article>
+
+          <article id="before-you-begin" class="card side-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Before You Begin</p>
+                <h2>Keep the first step simple</h2>
+              </div>
+            </div>
+            <p class="muted">
+              Choose upload if the client already sent plans or a schedule. Choose manual if
+              reception is capturing the enquiry live and you want the full builder immediately.
+            </p>
+          </article>
+
+          <article class="card side-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Session</p>
+                <h2>Access and login</h2>
+              </div>
+            </div>
+            <p id="login-status" class="muted">Ready for Google sign-in</p>
+            <button id="google-login-button" type="button" class="primary-button">
+              Sign in with Google
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <section id="builder-tab-panel" class="tab-panel">
+        <article id="builder-placeholder" class="card section-card placeholder-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Quote Builder</p>
+              <h2>Builder opens when you start a draft</h2>
+            </div>
+            <span class="pill subtle-pill">Manus-style staged workflow</span>
+          </div>
+          <div class="placeholder-grid">
+            <div class="placeholder-block">
+              <h3>1. Upload a document</h3>
+              <p class="muted">
+                Best for architect schedules and emailed PDF drawings where we can prefill the
+                review table before pricing.
+              </p>
+            </div>
+            <div class="placeholder-block">
+              <h3>2. Or start manually</h3>
+              <p class="muted">
+                Best for walk-in or phone enquiries where reception needs the job header and
+                product details captured from scratch.
+              </p>
+            </div>
+            <div class="placeholder-block">
+              <h3>3. Review and export</h3>
+              <p class="muted">
+                Once the workspace is open, price products, review totals, save the quote, and
+                generate a customer-ready PDF.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <section id="builder-workspace" class="workspace hidden">
+          <div class="main-column">
+            <article class="card section-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Job Header</p>
+                  <h2>Customer And Job Details</h2>
+                </div>
+                <div class="inline-actions">
+                  <button id="start-new-draft" type="button" class="ghost-button">Start new draft</button>
+                  <span class="pill subtle-pill">Live workspace</span>
+                </div>
+              </div>
+
+              <div class="grid-form">
+                <label>
+                  <span>Quote Number</span>
+                  <input id="quote-number" type="text" placeholder="Auto or manual quote number" />
+                </label>
+                <label>
+                  <span>Customer Name</span>
+                  <input id="customer-name" type="text" placeholder="Customer or company name" />
+                </label>
+                <label>
+                  <span>Phone Number</span>
+                  <input id="phone-number" type="text" placeholder="Optional contact number" />
+                </label>
+                <label>
+                  <span>Salesperson</span>
+                  <input id="salesperson" type="text" placeholder="Reception staff name" />
+                </label>
+                <label class="full-span">
+                  <span>Address</span>
+                  <textarea id="address" rows="2" placeholder="Site address or delivery address"></textarea>
+                </label>
+                <label>
+                  <span>Installer</span>
+                  <input id="installer" type="text" placeholder="Optional installer" />
+                </label>
+                <label class="full-span">
+                  <span>Notes</span>
+                  <textarea id="notes" rows="3" placeholder="Special instructions or customer notes"></textarea>
+                </label>
+              </div>
+            </article>
+
+            <article class="card section-card">
+              <div class="mode-toggle">
+                <button id="mode-upload" type="button" class="mode-button is-active">Upload Drawing</button>
+                <button id="mode-manual" type="button" class="mode-button">Manual Entry</button>
+              </div>
+
+              <section id="upload-panel" class="mode-panel">
+                <div class="mode-panel-header">
+                  <div>
+                    <p class="eyebrow">PDF Intake</p>
+                    <h3>Upload And Review Schedule Rows</h3>
+                  </div>
+                  <span class="warning-pill">Review extracted rows before pricing</span>
+                </div>
+
+                <div class="upload-bar">
+                  <label class="file-picker">
+                    <input id="pdf-file" type="file" accept=".pdf,application/pdf" />
+                    <span>Select PDF Drawing</span>
+                  </label>
+                  <div class="panel-actions">
+                    <button id="prepare-upload-review" type="button" class="primary-button">
+                      Extract Schedule
+                    </button>
+                    <button id="add-upload-row" type="button" class="ghost-button">Add Manual Row</button>
+                  </div>
+                </div>
+
+                <div class="compact-wrap">
+                  <table class="review-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Group</th>
+                        <th>System</th>
+                        <th>Width (mm)</th>
+                        <th>Height (mm)</th>
+                        <th>Run Length (m)</th>
+                        <th>Glass</th>
+                        <th>Frame</th>
+                        <th>Qty</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="upload-table-body"></tbody>
+                  </table>
+                </div>
+
+                <div class="panel-actions panel-actions-end">
+                  <p class="muted">Fix any highlighted rows, then add them to the quote workspace.</p>
+                  <button id="confirm-upload-rows" type="button" class="secondary-button">
+                    Confirm &amp; Add To Quote
+                  </button>
+                </div>
+              </section>
+
+              <section id="manual-panel" class="mode-panel hidden">
+                <div class="mode-panel-header">
+                  <div>
+                    <p class="eyebrow">Manual Builder</p>
+                    <h3>Configure A Product</h3>
+                  </div>
+                  <span id="edit-state-pill" class="pill">Adding a new product</span>
+                </div>
+
+                <div class="grid-form product-form">
+                  <label>
+                    <span>System Group</span>
+                    <select id="system-group"></select>
+                  </label>
+                  <label>
+                    <span>System</span>
+                    <select id="system-name"></select>
+                  </label>
+                  <label>
+                    <span>Product Code</span>
+                    <input id="product-code" type="text" placeholder="W1, D1, SD2..." />
+                  </label>
+                  <label>
+                    <span>Quantity</span>
+                    <input id="quantity" type="number" min="1" step="1" value="1" />
+                  </label>
+                  <label class="dimension-field" data-field="width">
+                    <span>Width (mm)</span>
+                    <input id="width-mm" type="number" min="1" step="1" placeholder="1200" />
+                  </label>
+                  <label class="dimension-field" data-field="height">
+                    <span>Height (mm)</span>
+                    <input id="height-mm" type="number" min="1" step="1" placeholder="1500" />
+                  </label>
+                  <label class="dimension-field hidden" data-field="run">
+                    <span>Run Length (m)</span>
+                    <input id="run-length" type="number" min="0.1" step="0.1" placeholder="4.2" />
+                  </label>
+                  <label class="dimension-field" data-field="glass">
+                    <span>Glass Type</span>
+                    <select id="glass-code"></select>
+                  </label>
+                  <label class="dimension-field" data-field="frame">
+                    <span>Frame Colour</span>
+                    <select id="frame-colour"></select>
+                  </label>
+                  <label class="dimension-field" data-field="hardware">
+                    <span>Hardware Colour</span>
+                    <select id="hardware-colour"></select>
+                  </label>
+                  <label class="dimension-field" data-field="hinge">
+                    <span>Hinge Type</span>
+                    <select id="hinge-type"></select>
+                  </label>
+                  <label class="dimension-field" data-field="panel">
+                    <span>Panel Count</span>
+                    <select id="panel-count"></select>
+                  </label>
+                  <label class="dimension-field hidden" data-field="leaf">
+                    <span>Leaf Count</span>
+                    <select id="leaf-count"></select>
+                  </label>
+                  <label class="dimension-field hidden" data-field="door-type">
+                    <span>Door Type</span>
+                    <select id="door-type"></select>
+                  </label>
+                  <label class="dimension-field hidden" data-field="door-qty">
+                    <span>Door Quantity</span>
+                    <input id="door-quantity" type="number" min="1" step="1" value="1" />
+                  </label>
+                </div>
+
+                <div class="panel-actions">
+                  <button id="calculate-product" type="button" class="primary-button">Calculate Price</button>
+                  <button id="add-to-quote" type="button" class="secondary-button" disabled>
+                    Add To Quote
+                  </button>
+                  <button id="reset-product-form" type="button" class="ghost-button">Reset Form</button>
+                </div>
+
+                <section id="calculation-preview" class="calculation-preview hidden">
+                  <div class="preview-topline">
+                    <div>
+                      <p class="eyebrow">Pricing Preview</p>
+                      <h3 id="preview-title">Awaiting calculation</h3>
+                      <p id="preview-message" class="muted">
+                        Select the product details and calculate to see the costing breakdown.
+                      </p>
+                    </div>
+                    <div class="preview-totals">
+                      <small>Subtotal</small>
+                      <span id="preview-subtotal">R 0.00</span>
+                    </div>
+                  </div>
+
+                  <div class="compact-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Description</th>
+                          <th>Qty</th>
+                          <th>Unit Price</th>
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody id="line-item-body"></tbody>
+                    </table>
+                  </div>
+                </section>
+              </section>
+            </article>
+          </div>
+
+          <aside class="summary-column">
+            <article class="card section-card summary-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Quote Summary</p>
+                  <h2 id="summary-quote-number">Unsaved quote</h2>
+                </div>
+              </div>
+
+              <div id="quote-lines" class="quote-lines"></div>
+
+              <section class="totals-panel">
+                <label>
+                  <span>Markup %</span>
+                  <input id="quote-markup" type="number" min="0" step="0.1" value="20" />
+                </label>
+                <label>
+                  <span>Discount Type</span>
+                  <select id="discount-type">
+                    <option value="amount">Amount</option>
+                    <option value="percent">Percent</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Discount Value</span>
+                  <input id="discount-value" type="number" min="0" step="0.01" value="0" />
+                </label>
+
+                <div class="total-grid">
+                  <div>
+                    <span>Subtotal</span>
+                    <strong id="subtotal-value">R 0.00</strong>
+                  </div>
+                  <div>
+                    <span>Markup</span>
+                    <strong id="markup-value">R 0.00</strong>
+                  </div>
+                  <div>
+                    <span>Discount</span>
+                    <strong id="discount-amount-value">R 0.00</strong>
+                  </div>
+                  <div class="grand-total">
+                    <span>Total</span>
+                    <strong id="grand-total-value">R 0.00</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="stacked-actions">
+                <button id="save-quote" type="button" class="primary-button">Save Quote</button>
+                <button id="preview-quote" type="button" class="ghost-button">Preview Quote</button>
+                <button id="export-quote" type="button" class="secondary-button">Export As PDF</button>
+                <button id="email-quote" type="button" class="ghost-button">Email Quote</button>
+              </div>
+            </article>
+          </aside>
+        </section>
+      </section>
+
+      <section id="saved-tab-panel" class="tab-panel hidden">
+        <article class="card section-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Saved Quotes</p>
+              <h2>Recent Quotes</h2>
+            </div>
+            <span class="pill subtle-pill">Load previous work into the builder</span>
+          </div>
+
+          <div class="search-row">
+            <input id="quote-search" type="text" placeholder="Search by quote number or customer name" />
+            <button id="refresh-quotes" type="button" class="ghost-button">Refresh</button>
+          </div>
+
+          <div id="recent-quotes" class="recent-quotes-list"></div>
+        </article>
+      </section>
+
+      <section id="pricing-tab-panel" class="tab-panel hidden">
+        <div class="reference-layout">
+          <article class="card section-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Price Book Administration</p>
+                <h2>System Coverage</h2>
+              </div>
+              <span class="pill subtle-pill">Derived from the local FastAPI catalog</span>
+            </div>
+            <p class="muted">
+              The live bridge app is using the imported finished-goods templates plus the 8
+              system-group fallback engines. This panel summarizes the current system coverage
+              and the latest Manus references available in the repo.
+            </p>
+            <div id="system-coverage" class="metric-grid"></div>
+          </article>
+
+          <article class="card section-card">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Imported Manus References</p>
+                <h2>Latest Source And Handoff Material</h2>
+              </div>
+              <span class="pill subtle-pill">Synced from the latest Manus ZIP</span>
+            </div>
+            <div id="reference-docs" class="reference-grid"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
