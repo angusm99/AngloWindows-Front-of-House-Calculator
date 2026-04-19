@@ -10,17 +10,18 @@ This folder now contains the local Anglo Windows reception calculator frontend.
 
 ## Current scope
 
+- Manus-inspired landing shell with staged intake workflow
 - Google sign-in demo state for front-desk workflow
 - Quote header intake
-- PDF upload review table
+- PDF upload review table backed by the local `/api/pdf-intake` route
 - Manual entry product builder
 - Live quote summary and saved quotes list
 - Preview, print-to-PDF, and email handoff
 - Pricing backed by the imported finished-goods template dataset
+- Imported Manus references surfaced in the UI's price-book tab
 
-## Still to wire from Manus or production systems
+## Still to wire from production systems
 
-- Real PDF extraction logic from `pdf_intake.py`
 - Production Google OAuth configuration
-- Production branding assets and exact PDF template
-- Exact Manus source files if a pixel-level match is required
+- Final branded PDF template/output wording
+- Additional Bizman exports or validated special-case pricing rules

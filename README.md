@@ -1,55 +1,63 @@
 # Anglo Windows Master Cost Calculator
 
-This repository now contains a working local MVP for the Anglo Windows reception calculator:
+This repository contains the local bridge build of the Anglo Windows reception calculator, updated from the latest Manus ZIP and shaped around a FastAPI-served browser UI.
 
-- `frontend/` contains a browser-based reception workflow UI
-- `src/app/` contains the FastAPI backend for catalogue data, pricing, quotes, and stock
-- `docs/` contains the reception guide, project brief, Drive notes, and the remaining Manus file requests
-
-## Current repo layout
+## Repo layout
 
 ```text
-frontend/   Local reception calculator frontend
-docs/       User guides, project brief, and integration notes
-src/app/    FastAPI backend and pricing engine
+frontend/         Local browser UI with Manus-inspired landing shell
+src/app/          FastAPI backend, pricing logic, quote routes, and PDF intake bridge
+docs/             Imported Manus handoff docs plus local implementation notes
+imports/          Extracted latest Manus source snapshot for reference and porting
 ```
 
-## What is already built
+## Current app status
 
-### Frontend MVP
+### Frontend
 
-- Reception-first quoting workspace served from FastAPI
+- Manus-style staged landing page with upload/manual entry paths
+- Quote builder, saved quotes tab, and price-book/reference tab
 - Quote header intake form
-- Upload review table for PDF-driven workflows
-- Manual entry flow with dynamic system selection
+- PDF upload review table with extraction-backed intake route
+- Manual product builder with dynamic system selection
 - Live quote summary with markup and discount controls
 - Save, reload, preview, print-to-PDF, and email handoff actions
 
 ### Backend
 
-- FastAPI app entrypoint and routes
-- Catalogue endpoints for system groups and options
-- Hybrid pricing engine across 8 system groups
-- Finished-goods template lookup sourced from `template finished goods list.xlsx - Sheet1.csv`
+- FastAPI app entrypoint and static frontend serving
+- Catalogue endpoints for system groups and configuration options
+- Hybrid pricing engine across the 8 supported system groups
+- Finished-goods template lookup sourced from the supplied CSV
+- `/api/pdf-intake` route backed by Manus `pdf_intake.py`
 - Quote save and reload endpoints
 - Stock level and stock transaction endpoints
 - Pydantic request and response schemas
 - In-memory repositories with seed data
 
-## What is still missing
+## Imported Manus material
 
-- Real PDF extraction via Manus `pdf_intake.py`
+The freshest Manus project snapshot is extracted at:
+
+- `imports/manus-latest/anglo-cost-calculator`
+
+Latest synced docs now available in `docs/`:
+
+- `AI_STUDIO_HANDOFF.md`
+- `ANGLO_SYSTEM_MASTER_FINAL.md`
+- `FRONT_OF_HOUSE_CALCULATOR_BRIEF.md`
+- `RECEPTION_USER_GUIDE.md`
+- `FINISHED_GOODS_ANALYSIS.md`
+
+## Still missing for full production parity
+
 - Production Google OAuth configuration
-- Additional Bizman exports and any edge-case pricing rules not covered by the current finished-goods template file
+- Additional Bizman exports or edge-case pricing rules if required
 - Persistent database-backed repositories
-- True PDF branding export and mail delivery service
-- Any Manus source files needed for an exact screen-for-screen clone
-
-See [frontend/README.md](frontend/README.md), [docs/files-needed-from-manus.md](docs/files-needed-from-manus.md), and [docs/drive-assets.md](docs/drive-assets.md) for the remaining integration notes.
+- Final branded PDF/export copy and outbound email service
+- A configured GitHub remote for push/publish
 
 ## Run locally
-
-The simplest Windows startup path is:
 
 ```powershell
 cd "C:\Users\User\Documents\New project"
