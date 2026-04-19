@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $venvPath = Join-Path $projectRoot ".venv"
 $venvPython = Join-Path $venvPath "Scripts\python.exe"
+$venvConfig = Join-Path $venvPath "pyvenv.cfg"
 
 function Get-BasePython {
     $command = Get-Command python -ErrorAction SilentlyContinue
@@ -28,6 +29,11 @@ function Get-BasePython {
     }
 
     throw "Python 3.11+ was not found. Install Python and rerun this script."
+}
+
+if ((Test-Path $venvPython) -and -not (Test-Path $venvConfig)) {
+    Write-Host "Existing virtual environment is incomplete. Recreating .venv..." -ForegroundColor Yellow
+    Remove-Item -LiteralPath $venvPath -Recurse -Force
 }
 
 if (-not (Test-Path $venvPython)) {
