@@ -1,5 +1,6 @@
 param(
-    [switch]$SkipInstall
+    [switch]$SkipInstall,
+    [switch]$Reload
 )
 
 $ErrorActionPreference = "Stop"
@@ -45,9 +46,13 @@ if (-not (Test-Path $venvPython)) {
 if (-not $SkipInstall) {
     Write-Host "Installing runtime dependencies..." -ForegroundColor Cyan
     & $venvPython -m pip install --upgrade pip
-    & $venvPython -m pip install fastapi "pydantic>=2.8,<3.0" "uvicorn>=0.30,<1.0" "pdfplumber>=0.11,<1.0" "python-multipart>=0.0.9,<1.0"
+    & $venvPython -m pip install fastapi "pydantic>=2.8,<3.0" "uvicorn>=0.30,<1.0" "pdfplumber>=0.11,<1.0" "python-multipart>=0.0.9,<1.0" "pymupdf>=1.27,<2.0" "rapidocr-onnxruntime>=1.2,<2.0"
 }
 
 Write-Host "Starting Front of House Calculator-1..." -ForegroundColor Green
 Set-Location $projectRoot
-& $venvPython -m uvicorn app.main:app --app-dir src --reload
+if ($Reload) {
+    & $venvPython -m uvicorn app.main:app --app-dir src --reload
+} else {
+    & $venvPython -m uvicorn app.main:app --app-dir src
+}

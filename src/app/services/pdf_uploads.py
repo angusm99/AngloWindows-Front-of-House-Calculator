@@ -33,10 +33,10 @@ CODE_GROUP_RULES = [
 ]
 
 
-def extract_pdf_upload_rows(pdf_path: Path) -> dict[str, Any]:
-    """Extract review-table rows from a schedule PDF."""
+def extract_pdf_upload_rows(pdf_path: Path, original_filename: str | None = None) -> dict[str, Any]:
+    """Extract review-table rows and document header hints from a PDF."""
     try:
-        result = extract_schedules(str(pdf_path))
+        result = extract_schedules(str(pdf_path), source_name=original_filename)
     except RuntimeError as exc:
         raise PdfIntakeUnavailableError(str(exc)) from exc
 
@@ -47,6 +47,7 @@ def extract_pdf_upload_rows(pdf_path: Path) -> dict[str, Any]:
         "warnings": result.get("warnings", []),
         "page_count": result.get("page_count", 0),
         "schedule_page_count": result.get("schedule_page_count", 0),
+        "document_info": result.get("document_info"),
     }
 
 

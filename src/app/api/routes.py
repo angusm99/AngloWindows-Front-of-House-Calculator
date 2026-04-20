@@ -55,7 +55,7 @@ async def intake_pdf(file: UploadFile = File(...)) -> PdfIntakeResponse:
         with NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
             temp_file.write(await file.read())
             temp_path = Path(temp_file.name)
-        payload = extract_pdf_upload_rows(temp_path)
+        payload = extract_pdf_upload_rows(temp_path, original_filename=filename)
         return PdfIntakeResponse(**payload)
     except PdfIntakeUnavailableError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc

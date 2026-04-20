@@ -439,18 +439,23 @@ async function prepareUploadReview() {
 
   try {
     const intake = await extractPdfRows(file);
+    applyDocumentInfo(intake.document_info);
     state.uploadRows = intake.rows.map((row) => createUploadRowFromIntake(row));
+    const warningCount = intake.warnings.length;
     if (state.uploadRows.length === 0) {
-      state.extractionSummary = "No schedule rows were found in that PDF.";
+      state.extractionSummary = buildExtractionSummary(0, 0, warningCount, intake.document_info);
       renderHeroStatus();
       renderUploadTable();
-      showToast("No schedule rows were found in that PDF. You can still add rows manually.");
+      openManualBuilder();
+      if (!elements.productCode.value.trim()) {
+        elements.productCode.value = "W1";
+      }
+      showToast("No opening rows were extracted automatically. The job details were prefilled where possible, and the manual builder is ready.");
       return;
     }
     renderUploadTable();
     const reviewCount = state.uploadRows.filter((row) => !isUploadRowValid(row)).length;
-    const warningCount = intake.warnings.length;
-    state.extractionSummary = `${state.uploadRows.length} row(s) extracted${reviewCount ? `, ${reviewCount} need review` : ""}${warningCount ? `, ${warningCount} warning(s)` : ""}.`;
+    state.extractionSummary = buildExtractionSummary(state.uploadRows.length, reviewCount, warningCount, intake.document_info);
     renderHeroStatus();
     showToast(
       `${state.uploadRows.length} row(s) extracted${reviewCount ? `, ${reviewCount} need review` : ""}${warningCount ? `, ${warningCount} warning(s)` : ""}.`,
@@ -464,6 +469,49 @@ async function prepareUploadReview() {
     renderUploadTable();
     showToast(error.message || `Unable to extract data from ${file.name}. Manual rows were prepared instead.`);
   }
+}
+
+function applyDocumentInfo(documentInfo) {
+  if (!documentInfo) {
+    return;
+  }
+
+  let changed = false;
+  if (!elements.customerName.value.trim() && documentInfo.customer_name) {
+    elements.customerName.value = documentInfo.customer_name;
+    changed = true;
+  }
+  if (!elements.phoneNumber.value.trim() && documentInfo.phone_number) {
+    elements.phoneNumber.value = documentInfo.phone_number;
+    changed = true;
+  }
+  if (!elements.address.value.trim()) {
+    const addressParts = [documentInfo.project_name, documentInfo.address].filter(Boolean);
+    if (addressParts.length > 0) {
+      elements.address.value = addressParts.join("\n");
+      changed = true;
+    }
+  }
+  if (!elements.notes.value.trim() && documentInfo.summary) {
+    elements.notes.value = `Imported from ${documentInfo.source}: ${documentInfo.summary}`;
+    changed = true;
+  }
+  if (changed) {
+    syncQuoteHeaderToState();
+    renderQuoteWorkspace();
+  }
+}
+
+function buildExtractionSummary(rowCount, reviewCount, warningCount, documentInfo) {
+  const base = rowCount
+    ? `${rowCount} row(s) extracted${reviewCount ? `, ${reviewCount} need review` : ""}${warningCount ? `, ${warningCount} warning(s)` : ""}.`
+    : `No opening rows extracted automatically${warningCount ? `, ${warningCount} warning(s)` : ""}.`;
+
+  if (!documentInfo || !documentInfo.summary) {
+    return base;
+  }
+
+  return `${base} Header match: ${documentInfo.summary}.`;
 }
 
 function createBlankUploadRow(code = "") {
@@ -655,7 +703,7 @@ async function calculateCurrentProduct() {
     state.currentCalculation = null;
     elements.addToQuote.disabled = true;
     renderCalculationPreview();
-    showToast(error.message || "Unable to calculate the product.");
+    showToast(readableCalculationError(error));
   }
 }
 
@@ -702,6 +750,17 @@ function collectProductFormPayload() {
   }
 
   return payload;
+}
+
+function readableCalculationError(error) {
+  const message = error?.message || "Unable to calculate the product.";
+  if (message.includes("width_mm and height_mm are required")) {
+    return "Enter both width and height before calculating, or use run length for balustrades.";
+  }
+  if (message.includes("Unknown system")) {
+    return "Choose a valid system group and system before calculating.";
+  }
+  return message;
 }
 
 function renderCalculationPreview() {

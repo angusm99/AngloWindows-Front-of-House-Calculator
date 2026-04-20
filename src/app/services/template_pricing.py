@@ -149,26 +149,29 @@ def load_finished_goods_templates() -> tuple[FinishedGoodsTemplate, ...]:
     with DATA_PATH.open("r", encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
-            width = _to_int(row["Width"])
-            height = _to_int(row["Height"])
-            if width <= 0 or height <= 0:
-                continue
+            try:
+                width = _to_int(row["Width"])
+                height = _to_int(row["Height"])
+                if width <= 0 or height <= 0:
+                    continue
 
-            records.append(
-                FinishedGoodsTemplate(
-                    product_code=row["Product_Code"].strip(),
-                    reference=row["Ref"].strip(),
-                    description=row["Description"].strip(),
-                    item_range=row["ItemRange"].strip(),
-                    width_mm=width,
-                    height_mm=height,
-                    item_sales_price_excl=_parse_money(row["ItemSalesPrice_excl"]),
-                    item_colour=row["ItemColour"].strip(),
-                    labour_site_fit=_parse_money(row["LabourSiteFit"]),
-                    labour_factory=_parse_money(row["LabourFactory"]),
-                    is_template=row["IsTemplate"].strip().upper() == "TRUE",
+                records.append(
+                    FinishedGoodsTemplate(
+                        product_code=row["Product_Code"].strip(),
+                        reference=row["Ref"].strip(),
+                        description=row["Description"].strip(),
+                        item_range=row["ItemRange"].strip(),
+                        width_mm=width,
+                        height_mm=height,
+                        item_sales_price_excl=_parse_money(row["ItemSalesPrice_excl"]),
+                        item_colour=row["ItemColour"].strip(),
+                        labour_site_fit=_parse_money(row["LabourSiteFit"]),
+                        labour_factory=_parse_money(row["LabourFactory"]),
+                        is_template=row["IsTemplate"].strip().upper() == "TRUE",
+                    )
                 )
-            )
+            except (KeyError, AttributeError, ValueError, TypeError):
+                continue
     return tuple(records)
 
 

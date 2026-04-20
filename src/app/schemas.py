@@ -80,11 +80,21 @@ class PdfIntakeRowResponse(BaseModel):
     flags: list[str] = Field(default_factory=list)
 
 
+class PdfDocumentInfoResponse(BaseModel):
+    customer_name: str | None = None
+    phone_number: str | None = None
+    address: str | None = None
+    project_name: str | None = None
+    source: Literal["schedule_text", "ocr", "filename", "unknown"] = "unknown"
+    summary: str | None = None
+
+
 class PdfIntakeResponse(BaseModel):
     rows: list[PdfIntakeRowResponse]
     warnings: list[str]
     page_count: int
     schedule_page_count: int
+    document_info: PdfDocumentInfoResponse | None = None
 
 
 class LineItemResponse(BaseModel):
