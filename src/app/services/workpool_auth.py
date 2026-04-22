@@ -3,10 +3,13 @@ from __future__ import annotations
 import json
 import os
 import secrets
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from http.cookiejar import CookieJar
 from typing import Any
 from urllib import error, parse, request
+
+_SESSION_TTL_SECONDS = 12 * 3600  # match the 12h cookie lifetime set in routes.py
 
 
 class WorkPoolAuthError(Exception):
@@ -27,6 +30,7 @@ class WorkPoolSession:
     session_id: str
     user: WorkPoolUser
     cookie_jar: CookieJar
+    created_at: float = field(default_factory=time.monotonic)
 
 
 class WorkPoolAuthService:
@@ -46,11 +50,12 @@ class WorkPoolAuthService:
         cookie_jar = CookieJar()
         opener = request.build_opener(request.HTTPCookieProcessor(cookie_jar))
 
+        # WorkPool .do endpoints are Java servlets expecting form-encoded bodies.
         payload = {
             "wp_id": self.wp_id,
             "data": json.dumps({"username": username, "password": password}),
         }
-        response = self._post_json(opener, "/wservices/resource/login.do", payload)
+        response = self._post_form(opener, "/wservices/resource/login.do", payload)
         self._ensure_login_success(response)
 
         user = self._resolve_user(opener, username)
@@ -62,7 +67,13 @@ class WorkPoolAuthService:
     def get_session(self, session_id: str | None) -> WorkPoolSession | None:
         if not session_id:
             return None
-        return self._sessions.get(session_id)
+        session = self._sessions.get(session_id)
+        if session is None:
+            return None
+        if time.monotonic() - session.created_at > _SESSION_TTL_SECONDS:
+            self._sessions.pop(session_id, None)
+            return None
+        return session
 
     def logout(self, session_id: str | None) -> None:
         if session_id:
@@ -91,6 +102,20 @@ class WorkPoolAuthService:
         )
 
     def _lookup_mobile_user(self, opener: request.OpenerDirector, username: str) -> dict[str, Any] | None:
+        # Prefer targeted lookup (single user) over dumping all resources.
+        try:
+            result = self._post_form(
+                opener,
+                "/wservices/users/resource-with-username.do",
+                {"wp_id": self.wp_id, "username": username},
+            )
+            if isinstance(result, dict) and result.get("username"):
+                return result
+        except WorkPoolAuthError:
+            pass
+
+        # Fallback: scan all resources (slow, but handles WorkPool variants that
+        # don't expose resource-with-username.do).
         try:
             users = self._post_form(opener, "/wservices/resource/allresources.do", {"wp_id": self.wp_id})
         except WorkPoolAuthError:
@@ -131,19 +156,24 @@ class WorkPoolAuthService:
             raise WorkPoolAuthError("WorkPool login is not configured yet. Set WORKPOOL_WP_ID on the server.")
 
     def _ensure_login_success(self, response: Any) -> None:
+        _SUCCESS_CODES = {"success", "ok", "200", "true"}
+        _ERROR_WORDS = ("error", "invalid", "failed", "denied", "unauthorized", "incorrect", "wrong")
+
         if isinstance(response, dict):
             code = str(response.get("code", "")).strip().lower()
             content = str(response.get("content", "")).strip()
-            if code in {"success", "ok", "200", "true"}:
+            if code in _SUCCESS_CODES:
                 return
-            if code and code not in {"success", "ok", "200", "true"}:
-                raise WorkPoolAuthError(content or "WorkPool login was rejected.")
-            if content and any(word in content.lower() for word in ["error", "invalid", "failed"]):
+            if code:
+                # Non-empty code that is not a recognised success value is a failure.
+                raise WorkPoolAuthError(content or f"WorkPool returned unexpected code: {code!r}")
+            # code is empty — check content for error indicators.
+            if content and any(word in content.lower() for word in _ERROR_WORDS):
                 raise WorkPoolAuthError(content)
             return
 
         if isinstance(response, str):
-            if any(word in response.lower() for word in ["error", "invalid", "failed"]):
+            if any(word in response.lower() for word in _ERROR_WORDS):
                 raise WorkPoolAuthError(response)
             return
 

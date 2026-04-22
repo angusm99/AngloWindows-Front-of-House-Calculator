@@ -147,7 +147,7 @@ class ScheduleExtractor:
         texts: list[str] = []
         document = fitz.open(self.pdf_path)
         try:
-            for page in document[: min(3, len(document))]:
+            for page in document[: min(15, len(document))]:
                 pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
                 image = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, pixmap.n)
                 result, _ = engine(image)
@@ -176,10 +176,14 @@ class ScheduleExtractor:
                 phone_number = phone_match.group(0)
                 break
 
+        _CUSTOMER_TOKENS = (
+            "CLIENT", "CUSTOMER", "ATT", "TENANT",
+            "TO:", "ATTENTION:", "PREPARED FOR", "FOR:", "OWNER:", "OCCUPANT:",
+        )
         if not customer_name:
             for line in top_lines:
                 upper = line.upper()
-                if any(token in upper for token in ("CLIENT", "CUSTOMER", "ATT", "TENANT")) and ":" in line:
+                if any(token in upper for token in _CUSTOMER_TOKENS) and ":" in line:
                     candidate = line.split(":", 1)[1].strip()
                     if candidate:
                         customer_name = candidate
@@ -333,7 +337,7 @@ class ScheduleExtractor:
             if code in seen_codes:
                 continue
 
-            nearby = "\n".join(lines[max(0, index - 1): min(len(lines), index + 3)])
+            nearby = "\n".join(lines[max(0, index - 2): min(len(lines), index + 6)])
             dimensions = self._extract_dimensions_improved(nearby, code)
             width = dimensions.get("width")
             height = dimensions.get("height")
@@ -453,14 +457,18 @@ class ImageScheduleExtractor(ScheduleExtractor):
 
         engine = RapidOCR()
         base_pixmap = fitz.Pixmap(self.pdf_path)
-        pixmap = fitz.Pixmap(fitz.csRGB, base_pixmap) if base_pixmap.alpha or base_pixmap.colorspace.n != 3 else base_pixmap
+        needs_conversion = base_pixmap.alpha or base_pixmap.colorspace.n != 3
+        pixmap = fitz.Pixmap(fitz.csRGB, base_pixmap) if needs_conversion else base_pixmap
         try:
             image = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, pixmap.n)
             result, _ = engine(image)
         finally:
-            if pixmap is not base_pixmap:
-                pixmap = None
-            base_pixmap = None
+            # Explicitly free the converted pixmap (if created) before freeing base.
+            # PyMuPDF wraps C memory; explicit deref avoids holding large image buffers
+            # past this function when processing many images.
+            if needs_conversion:
+                del pixmap
+            del base_pixmap
 
         if not result:
             return []
