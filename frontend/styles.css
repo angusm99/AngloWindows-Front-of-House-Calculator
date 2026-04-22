@@ -316,6 +316,12 @@ button {
   background: linear-gradient(180deg, rgba(10, 10, 10, 0.88), rgba(16, 16, 16, 0.82));
 }
 
+.auth-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
 .nav-tab-list {
   display: grid;
   gap: 10px;
@@ -451,6 +457,11 @@ button {
   display: grid;
   gap: 14px;
   margin-top: 18px;
+}
+
+.snapshot-stack {
+  display: grid;
+  gap: 12px;
 }
 
 .inline-metric-grid {
@@ -666,7 +677,43 @@ textarea {
   gap: 18px;
 }
 
+.intake-summary-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(242, 191, 40, 0.14);
+  background: linear-gradient(135deg, rgba(242, 191, 40, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.intake-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.intake-summary-grid div {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.intake-summary-grid span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.upload-primary-actions {
+  justify-content: flex-start;
+}
+
 .upload-bar {
+  display: grid;
+  gap: 12px;
   align-items: stretch;
 }
 
@@ -685,11 +732,15 @@ textarea {
 .file-picker span {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100%;
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   border: 1px dashed rgba(242, 191, 40, 0.3);
+}
+
+.compact-picker span {
+  min-height: 56px;
 }
 
 .panel-actions-end {
@@ -972,7 +1023,8 @@ tbody tr:last-child td {
   .reference-layout,
   .landing-support-grid,
   .inline-metric-grid,
-  .draft-snapshot-grid {
+  .draft-snapshot-grid,
+  .intake-summary-grid {
     grid-template-columns: 1fr;
   }
 }

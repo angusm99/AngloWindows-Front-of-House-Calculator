@@ -20,6 +20,7 @@ const state = {
   uploadedFileName: "",
   extractionSummary: "",
   sessionUser: null,
+  sessionProfile: null,
   quote: {
     id: null,
     quote_number: "",
@@ -102,7 +103,13 @@ function bindElements() {
     "system-coverage",
     "reference-docs",
     "login-status",
-    "google-login-button",
+    "workpool-login-form",
+    "workpool-username",
+    "workpool-password",
+    "workpool-login-button",
+    "workpool-logout-button",
+    "landing-support-panels",
+    "draft-warning-pill",
     "quote-number",
     "customer-name",
     "phone-number",
@@ -114,6 +121,17 @@ function bindElements() {
     "mode-manual",
     "upload-panel",
     "manual-panel",
+    "intake-summary-title",
+    "intake-summary-customer",
+    "intake-summary-phone",
+    "intake-summary-address",
+    "intake-summary-salesperson",
+    "sticky-customer-name",
+    "sticky-phone-number",
+    "sticky-address",
+    "sticky-salesperson",
+    "choose-pdf-button",
+    "selected-pdf-label",
     "pdf-file",
     "prepare-upload-review",
     "add-upload-row",
@@ -168,15 +186,17 @@ function bindElements() {
 }
 
 function bindEvents() {
-  elements.heroUploadButton.addEventListener("click", () => openUploadFlow(true));
+  elements.heroUploadButton.addEventListener("click", () => openUploadFlow(false));
   elements.heroManualButton.addEventListener("click", openManualBuilder);
   elements.tabBuilder.addEventListener("click", () => setActiveTab("builder"));
   elements.tabSaved.addEventListener("click", () => setActiveTab("saved"));
   elements.tabPricing.addEventListener("click", () => setActiveTab("pricing"));
   elements.startNewDraft.addEventListener("click", startNewDraft);
-  elements.googleLoginButton.addEventListener("click", handleGoogleDemoLogin);
+  elements.workpoolLoginForm.addEventListener("submit", handleWorkPoolLogin);
+  elements.workpoolLogoutButton.addEventListener("click", handleWorkPoolLogout);
   elements.modeUpload.addEventListener("click", () => switchMode("upload"));
   elements.modeManual.addEventListener("click", () => switchMode("manual"));
+  elements.choosePdfButton.addEventListener("click", () => elements.pdfFile.click());
   elements.pdfFile.addEventListener("change", handlePdfFileSelection);
   elements.prepareUploadReview.addEventListener("click", prepareUploadReview);
   elements.addUploadRow.addEventListener("click", () => {
@@ -193,6 +213,17 @@ function bindEvents() {
   elements.quoteMarkup.addEventListener("input", renderQuoteWorkspace);
   elements.discountType.addEventListener("change", renderQuoteWorkspace);
   elements.discountValue.addEventListener("input", renderQuoteWorkspace);
+  [
+    elements.quoteNumber,
+    elements.customerName,
+    elements.phoneNumber,
+    elements.address,
+    elements.salesperson,
+    elements.installer,
+    elements.notes,
+  ].forEach((element) => {
+    element.addEventListener("input", renderQuoteWorkspace);
+  });
   elements.saveQuote.addEventListener("click", saveQuote);
   elements.previewQuote.addEventListener("click", () => openQuotePreview(false));
   elements.exportQuote.addEventListener("click", () => openQuotePreview(true));
@@ -204,6 +235,7 @@ async function initialise() {
   setWorkspaceVisible(false);
   switchMode("upload");
   renderHeroStatus();
+  renderSessionState();
 
   try {
     const [groupData, optionData] = await Promise.all([
@@ -219,7 +251,8 @@ async function initialise() {
     resetProductForm();
     renderQuoteWorkspace();
     await loadRecentQuotes();
-    showToast("Calculator ready. You can start with Upload Drawing or Manual Entry.");
+    await hydrateSession();
+    showToast("Calculator ready. Open document intake or jump into manual entry.");
   } catch (error) {
     showToast(error.message || "Unable to load the calculator data.");
   }
@@ -240,6 +273,7 @@ function setWorkspaceVisible(visible) {
   elements.builderWorkspace.classList.toggle("hidden", !visible);
   elements.builderPlaceholder.classList.toggle("hidden", visible);
   elements.beforeYouBegin.classList.toggle("hidden", visible);
+  elements.landingSupportPanels.classList.toggle("hidden", visible);
 }
 
 function openUploadFlow(openPicker) {
@@ -252,8 +286,6 @@ function openUploadFlow(openPicker) {
 }
 
 function openManualBuilder() {
-  state.extractionSummary = "";
-  renderHeroStatus();
   setActiveTab("builder");
   setWorkspaceVisible(true);
   switchMode("manual");
@@ -261,6 +293,20 @@ function openManualBuilder() {
 }
 
 function startNewDraft() {
+  const hasDraftData =
+    state.quote.lines.length > 0 ||
+    state.uploadRows.length > 0 ||
+    Boolean(
+      elements.customerName.value.trim() ||
+        elements.phoneNumber.value.trim() ||
+        elements.address.value.trim() ||
+        elements.notes.value.trim(),
+    );
+
+  if (hasDraftData && !window.confirm("Start a new draft and clear the current job header, extracted rows, and quote lines?")) {
+    return;
+  }
+
   state.currentCalculation = null;
   state.currentEditIndex = null;
   state.uploadRows = [];
@@ -292,6 +338,7 @@ function startNewDraft() {
   elements.discountType.value = "amount";
   elements.discountValue.value = "0";
   elements.pdfFile.value = "";
+  elements.selectedPdfLabel.textContent = "No file selected yet";
 
   setActiveTab("builder");
   setWorkspaceVisible(false);
@@ -330,8 +377,12 @@ function renderReferenceData() {
 function renderHeroStatus() {
   elements.heroUploadStatus.textContent = state.uploadedFileName
     ? `Latest file: ${state.uploadedFileName}`
-    : "Supported format: PDF drawing schedules.";
+    : "Open the intake workspace, choose a file, then extract the schedule.";
   elements.heroExtractionSummary.textContent = state.extractionSummary || "";
+  elements.draftWarningPill.classList.toggle(
+    "hidden",
+    state.quote.lines.length === 0 && state.uploadRows.length === 0 && !state.quote.customer_name,
+  );
 }
 
 function renderHeroMetrics(totals) {
@@ -372,19 +423,92 @@ function switchMode(mode) {
   elements.manualPanel.classList.toggle("hidden", mode !== "manual");
 }
 
-function handleGoogleDemoLogin() {
-  state.sessionUser = "Reception Desk";
-  elements.loginStatus.textContent = "Google sign-in demo active";
-  if (!elements.salesperson.value.trim()) {
-    elements.salesperson.value = state.sessionUser;
+async function hydrateSession() {
+  try {
+    const session = await fetchJson("/api/auth/me");
+    state.sessionProfile = session.authenticated ? session.user : null;
+    state.sessionUser = session.authenticated ? session.user.display_name : null;
+    if (session.authenticated && !elements.salesperson.value.trim()) {
+      elements.salesperson.value = session.user.display_name;
+    }
+    renderSessionState();
+    renderQuoteWorkspace();
+  } catch {
+    state.sessionProfile = null;
+    state.sessionUser = null;
+    renderSessionState();
   }
-  showToast("Google demo sign-in activated for the reception workflow.");
+}
+
+function renderSessionState() {
+  const signedIn = Boolean(state.sessionProfile);
+  elements.workpoolUsername.disabled = signedIn;
+  elements.workpoolPassword.disabled = signedIn;
+  elements.workpoolLoginButton.disabled = signedIn;
+  elements.workpoolLogoutButton.classList.toggle("hidden", !signedIn);
+
+  if (!signedIn) {
+    elements.loginStatus.textContent = "Sign in with your WorkPool username and password.";
+    return;
+  }
+
+  const emailText = state.sessionProfile.email ? ` · ${state.sessionProfile.email}` : "";
+  elements.loginStatus.textContent = `Signed in as ${state.sessionProfile.display_name} (${state.sessionProfile.username})${emailText}`;
+}
+
+async function handleWorkPoolLogin(event) {
+  event.preventDefault();
+  const username = elements.workpoolUsername.value.trim();
+  const password = elements.workpoolPassword.value;
+  if (!username || !password) {
+    showToast("Enter your WorkPool username and password first.");
+    return;
+  }
+
+  elements.workpoolLoginButton.disabled = true;
+  try {
+    const session = await fetchJson("/api/auth/workpool/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    state.sessionProfile = session.user;
+    state.sessionUser = session.user.display_name;
+    if (!elements.salesperson.value.trim()) {
+      elements.salesperson.value = session.user.display_name;
+    }
+    elements.workpoolPassword.value = "";
+    renderSessionState();
+    renderQuoteWorkspace();
+    showToast(`Signed in with WorkPool as ${session.user.display_name}.`);
+  } catch (error) {
+    elements.workpoolLoginButton.disabled = false;
+    showToast(error.message || "WorkPool sign-in failed.");
+  }
+}
+
+async function handleWorkPoolLogout() {
+  const previousDisplayName = state.sessionUser;
+  try {
+    await fetchJson("/api/auth/logout", { method: "POST" });
+  } catch {
+    // Even if WorkPool logout fails, clear the local app session state.
+  }
+  state.sessionProfile = null;
+  state.sessionUser = null;
+  if (elements.salesperson.value.trim() === previousDisplayName) {
+    elements.salesperson.value = "";
+  }
+  renderSessionState();
+  renderQuoteWorkspace();
+  showToast("Signed out of the calculator session.");
 }
 
 function handlePdfFileSelection() {
   const file = elements.pdfFile.files[0];
   state.uploadedFileName = file ? file.name : "";
   state.extractionSummary = "";
+  elements.selectedPdfLabel.textContent = file ? file.name : "No file selected yet";
   renderHeroStatus();
 }
 
@@ -430,7 +554,7 @@ async function prepareUploadReview() {
   switchMode("upload");
   const file = elements.pdfFile.files[0];
   if (!file) {
-    showToast("Select a PDF first so we can prepare the review table.");
+    showToast("Choose a file first so we can prepare the review table.");
     return;
   }
 
@@ -500,6 +624,9 @@ function applyDocumentInfo(documentInfo) {
     syncQuoteHeaderToState();
     renderQuoteWorkspace();
   }
+
+  setActiveTab("builder");
+  setWorkspaceVisible(true);
 }
 
 function buildExtractionSummary(rowCount, reviewCount, warningCount, documentInfo) {
@@ -563,7 +690,7 @@ function renderUploadTable() {
     elements.uploadTableBody.innerHTML = `
       <tr>
         <td colspan="11">
-          <div class="empty-state">Select a PDF or add a row to start the review table.</div>
+          <div class="empty-state">Choose a file or add a row to start the review table.</div>
         </td>
       </tr>
     `;
@@ -870,6 +997,7 @@ function renderQuoteWorkspace() {
   const totals = computeQuoteTotals();
   renderHeroMetrics(totals);
   renderLandingSnapshot(totals);
+  renderJobHeaderSnapshot();
   elements.summaryQuoteNumber.textContent = state.quote.quote_number || "Unsaved quote";
   elements.subtotalValue.textContent = currency(totals.subtotal);
   elements.markupValue.textContent = currency(totals.markup);
@@ -916,6 +1044,26 @@ function renderQuoteWorkspace() {
       showToast("Product removed from quote.");
     });
   });
+}
+
+function renderJobHeaderSnapshot() {
+  const customer = state.quote.customer_name || "Waiting for intake";
+  const phone = state.quote.phone_number || "-";
+  const address = state.quote.address || "-";
+  const salesperson = state.quote.salesperson || state.sessionUser || "-";
+  const title = state.uploadedFileName
+    ? `Ready to review ${state.uploadedFileName}`
+    : "No document extracted yet";
+
+  elements.intakeSummaryTitle.textContent = title;
+  elements.intakeSummaryCustomer.textContent = customer;
+  elements.intakeSummaryPhone.textContent = phone;
+  elements.intakeSummaryAddress.textContent = address;
+  elements.intakeSummarySalesperson.textContent = salesperson;
+  elements.stickyCustomerName.textContent = customer;
+  elements.stickyPhoneNumber.textContent = phone;
+  elements.stickyAddress.textContent = address;
+  elements.stickySalesperson.textContent = salesperson;
 }
 
 function editQuoteLine(index) {

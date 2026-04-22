@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from app.services.pdf_intake import extract_schedules
+from app.services.pdf_intake import IMAGE_EXTENSIONS, extract_document_intake
 
 
 class PdfIntakeUnavailableError(RuntimeError):
@@ -33,10 +33,13 @@ CODE_GROUP_RULES = [
 ]
 
 
+SUPPORTED_INTAKE_EXTENSIONS = {".pdf", *IMAGE_EXTENSIONS}
+
+
 def extract_pdf_upload_rows(pdf_path: Path, original_filename: str | None = None) -> dict[str, Any]:
-    """Extract review-table rows and document header hints from a PDF."""
+    """Extract review-table rows and document header hints from PDFs and intake images."""
     try:
-        result = extract_schedules(str(pdf_path), source_name=original_filename)
+        result = extract_document_intake(str(pdf_path), source_name=original_filename)
     except RuntimeError as exc:
         raise PdfIntakeUnavailableError(str(exc)) from exc
 

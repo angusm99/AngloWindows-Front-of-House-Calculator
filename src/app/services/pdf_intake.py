@@ -34,6 +34,8 @@ try:
 except ImportError:  # pragma: no cover - environment-dependent import
     RapidOCR = None
 
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".jfif", ".bmp", ".tif", ".tiff", ".webp"}
+
 
 class ScheduleExtractor:
     """Extract schedule rows and document metadata from PDFs."""
@@ -407,6 +409,72 @@ class ScheduleExtractor:
 def extract_schedules(pdf_path: str, source_name: str | None = None) -> dict[str, Any]:
     extractor = ScheduleExtractor(pdf_path, source_name=source_name)
     return extractor.extract()
+
+
+class ImageScheduleExtractor(ScheduleExtractor):
+    """Extract whatever we can from image-based quote requests."""
+
+    def extract(self) -> dict[str, Any]:
+        try:
+            ocr_pages = self._run_ocr_image()
+            if ocr_pages:
+                combined_ocr_text = "\n".join(ocr_pages)
+                self.document_info = self._extract_document_info(combined_ocr_text, "ocr")
+                self.schedule_items = self._extract_from_ocr_text(ocr_pages)
+                if self.schedule_items:
+                    self.warnings.append("Rows were extracted from OCR and should be reviewed before pricing.")
+                else:
+                    self.warnings.append("Image text was read, but no opening rows could be confidently extracted.")
+            else:
+                self.document_info = self._extract_document_info("", "filename")
+                self.warnings.append("This image could not be read clearly enough for intake.")
+
+            return {
+                "schedule_items": self.schedule_items,
+                "warnings": self.warnings,
+                "page_count": 1,
+                "schedule_page_count": 0,
+                "document_info": self.document_info,
+            }
+        except Exception as exc:
+            self.warnings.append(f"Error during extraction: {exc}")
+            return {
+                "schedule_items": [],
+                "warnings": self.warnings,
+                "page_count": 1,
+                "schedule_page_count": 0,
+                "document_info": self.document_info,
+            }
+
+    def _run_ocr_image(self) -> list[str]:
+        if fitz is None or RapidOCR is None or np is None:
+            self.warnings.append("OCR dependencies are unavailable for image intake.")
+            return []
+
+        engine = RapidOCR()
+        base_pixmap = fitz.Pixmap(self.pdf_path)
+        pixmap = fitz.Pixmap(fitz.csRGB, base_pixmap) if base_pixmap.alpha or base_pixmap.colorspace.n != 3 else base_pixmap
+        try:
+            image = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, pixmap.n)
+            result, _ = engine(image)
+        finally:
+            if pixmap is not base_pixmap:
+                pixmap = None
+            base_pixmap = None
+
+        if not result:
+            return []
+
+        lines = [entry[1] for entry in result if len(entry) >= 2 and str(entry[1]).strip()]
+        return ["\n".join(lines)] if lines else []
+
+
+def extract_document_intake(document_path: str, source_name: str | None = None) -> dict[str, Any]:
+    suffix = Path(document_path).suffix.lower()
+    if suffix in IMAGE_EXTENSIONS:
+        extractor = ImageScheduleExtractor(document_path, source_name=source_name)
+        return extractor.extract()
+    return extract_schedules(document_path, source_name=source_name)
 
 
 def to_csv(schedule_items: list[dict[str, Any]], output_path: str) -> None:

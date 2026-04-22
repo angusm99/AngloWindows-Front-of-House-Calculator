@@ -60,6 +60,25 @@ class CalculatorOptionsResponse(BaseModel):
     leaf_counts: list[ConfigOptionResponse]
 
 
+class WorkPoolLoginRequest(BaseModel):
+    username: str = Field(min_length=1)
+    password: str = Field(min_length=1)
+
+
+class AuthUserResponse(BaseModel):
+    username: str
+    display_name: str
+    email: str | None = None
+    resource_id: int | None = None
+    wp_id: str
+    auth_source: Literal["workpool"] = "workpool"
+
+
+class AuthSessionResponse(BaseModel):
+    authenticated: bool
+    user: AuthUserResponse | None = None
+
+
 class PdfIntakeRowResponse(BaseModel):
     code: str
     system_group: str

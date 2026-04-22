@@ -42,14 +42,14 @@
                 <h3>Upload and prefill</h3>
               </div>
               <p class="muted">
-                Upload a PDF drawing and let the calculator extract likely schedule rows into
-                a review table before pricing.
+                Upload a PDF, drawing photo, or written request and let the calculator pull
+                through whatever header details and schedule rows it can before pricing.
               </p>
               <button id="hero-upload-button" type="button" class="primary-button">
-                Upload document
+                Open document intake
               </button>
               <div class="intake-meta">
-                <p id="hero-upload-status">Supported format: PDF drawing schedules.</p>
+                <p id="hero-upload-status">Open the intake workspace, choose a file, then extract the schedule.</p>
                 <p id="hero-extraction-summary" class="accent-copy"></p>
               </div>
             </article>
@@ -106,13 +106,27 @@
             <div class="section-heading">
               <div>
                 <p class="eyebrow">Session</p>
-                <h2>Access and login</h2>
+                <h2>WorkPool access</h2>
               </div>
             </div>
-            <p id="login-status" class="muted">Ready for Google sign-in</p>
-            <button id="google-login-button" type="button" class="primary-button">
-              Sign in with Google
-            </button>
+            <p id="login-status" class="muted">Sign in with your WorkPool username and password.</p>
+            <form id="workpool-login-form" class="auth-form">
+              <label>
+                <span>Username</span>
+                <input id="workpool-username" type="text" autocomplete="username" placeholder="WorkPool username" />
+              </label>
+              <label>
+                <span>Password</span>
+                <input id="workpool-password" type="password" autocomplete="current-password" placeholder="WorkPool password" />
+              </label>
+              <div class="panel-actions">
+                <button id="workpool-login-button" type="submit" class="primary-button">Sign in with WorkPool</button>
+                <button id="workpool-logout-button" type="button" class="ghost-button hidden">Sign out</button>
+              </div>
+            </form>
+            <p class="muted">
+              Local testing still needs an explicit sign-in here. Later we can explore reusing an existing browser session if the app is hosted alongside WorkPool.
+            </p>
           </article>
         </div>
       </section>
@@ -217,7 +231,7 @@
                 </div>
                 <div class="inline-actions">
                   <button id="start-new-draft" type="button" class="ghost-button">Start new draft</button>
-                  <span class="pill subtle-pill">Live workspace</span>
+                  <span id="draft-warning-pill" class="warning-pill hidden">Starting fresh clears the current draft</span>
                 </div>
               </div>
 
@@ -262,23 +276,51 @@
               <section id="upload-panel" class="mode-panel">
                 <div class="mode-panel-header">
                   <div>
-                    <p class="eyebrow">PDF Intake</p>
+                    <p class="eyebrow">Document Intake</p>
                     <h3>Upload And Review Schedule Rows</h3>
                   </div>
                   <span class="warning-pill">Review extracted rows before pricing</span>
                 </div>
 
+                <article class="intake-summary-card">
+                  <div>
+                    <p class="eyebrow">Extracted job header</p>
+                    <h3 id="intake-summary-title">No document extracted yet</h3>
+                  </div>
+                  <div class="intake-summary-grid">
+                    <div>
+                      <span>Customer</span>
+                      <strong id="intake-summary-customer">Waiting for document</strong>
+                    </div>
+                    <div>
+                      <span>Phone</span>
+                      <strong id="intake-summary-phone">-</strong>
+                    </div>
+                    <div>
+                      <span>Address</span>
+                      <strong id="intake-summary-address">-</strong>
+                    </div>
+                    <div>
+                      <span>Salesperson</span>
+                      <strong id="intake-summary-salesperson">-</strong>
+                    </div>
+                  </div>
+                </article>
+
                 <div class="upload-bar">
-                  <label class="file-picker">
-                    <input id="pdf-file" type="file" accept=".pdf,application/pdf" />
-                    <span>Select PDF Drawing</span>
-                  </label>
-                  <div class="panel-actions">
+                  <div class="panel-actions upload-primary-actions">
                     <button id="prepare-upload-review" type="button" class="primary-button">
                       Extract Schedule
                     </button>
+                    <button id="choose-pdf-button" type="button" class="secondary-button">
+                      Choose File
+                    </button>
                     <button id="add-upload-row" type="button" class="ghost-button">Add Manual Row</button>
                   </div>
+                  <label class="file-picker compact-picker">
+                    <input id="pdf-file" type="file" accept=".pdf,application/pdf,.jpg,.jpeg,.png,.jfif,.bmp,.tif,.tiff,.webp,image/*" />
+                    <span id="selected-pdf-label">No file selected yet</span>
+                  </label>
                 </div>
 
                 <div class="compact-wrap">
@@ -424,6 +466,33 @@
           </div>
 
           <aside class="summary-column">
+            <article class="card section-card">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Header Snapshot</p>
+                  <h2>Always visible job details</h2>
+                </div>
+              </div>
+              <div class="snapshot-stack">
+                <div class="snapshot-card">
+                  <p class="snapshot-label">Customer</p>
+                  <p id="sticky-customer-name" class="snapshot-value">Waiting for intake</p>
+                </div>
+                <div class="snapshot-card">
+                  <p class="snapshot-label">Phone</p>
+                  <p id="sticky-phone-number" class="snapshot-value">-</p>
+                </div>
+                <div class="snapshot-card">
+                  <p class="snapshot-label">Address</p>
+                  <p id="sticky-address" class="snapshot-value">-</p>
+                </div>
+                <div class="snapshot-card">
+                  <p class="snapshot-label">Salesperson</p>
+                  <p id="sticky-salesperson" class="snapshot-value">-</p>
+                </div>
+              </div>
+            </article>
+
             <article class="card section-card summary-card">
               <div class="section-heading">
                 <div>

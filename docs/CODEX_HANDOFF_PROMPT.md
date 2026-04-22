@@ -8,99 +8,101 @@ We are continuing work on the Anglo Windows Front of House Calculator.
 Repository:
 - name: AngloWindows-Front-of-House-Calculator
 - branch: main
-- latest known commit from the previous work session: e417777
-- latest change summary: Improve rough-copy intake and stabilize local startup
+- continue from the latest pushed HEAD on GitHub
 
 Project purpose:
-This is a browser-based quick quoting app for Anglo Windows reception/front-of-house use, and later for reps and other staff. It should allow users to:
-- upload rough copies
-- upload window schedules
-- upload drawings/plans
-- manually build quotes
-- calculate pricing for windows, doors, balustrades, and other stocked/manufactured products
-- export quotes as PDF
+This is a browser-based quick quoting app for Anglo Windows reception/front-of-house use. It should help staff:
+- upload schedules, rough copies, drawings, and mixed customer request files
+- manually build and edit quotes
+- calculate pricing for windows, doors, shopfronts, folding systems, and balustrades
+- save quotes and export customer-ready PDFs
 
-Technology and layout:
-- FastAPI backend in src/app
-- static frontend in frontend
-- local startup script: start.ps1
-- app served locally on http://127.0.0.1:8000
+Technology:
+- FastAPI backend in `src/app`
+- static frontend in `frontend`
+- local startup script: `start.ps1`
+- app served locally on `http://127.0.0.1:8000`
 
-Important repo context:
-- start.ps1 was changed to run uvicorn without --reload by default for stability
-- use -Reload only if explicitly needed
-- OCR-related dependencies were added:
-  - pymupdf
-  - rapidocr-onnxruntime
-- pyproject.toml and start.ps1 were updated accordingly
+Recent major changes already completed:
+1. Replaced the old Google demo login placeholder with WorkPool-first auth wiring
+   - backend endpoints:
+     - `POST /api/auth/workpool/login`
+     - `GET /api/auth/me`
+     - `POST /api/auth/logout`
+   - service file:
+     - `src/app/services/workpool_auth.py`
+   - frontend now has a WorkPool sign-in panel instead of Google demo UI
+2. Improved intake UX
+   - clearer document-intake entry point
+   - extracted job header shown near the top of intake
+   - sticky job-header snapshot in the right column while scrolling
+   - `Start new draft` now warns before clearing data
+   - removed the confusing duplicate upload messaging
+3. Extended intake to accept mixed file types
+   - PDFs still work
+   - common image files now also go through the same intake route
+   - this was wired through:
+     - `src/app/services/pdf_intake.py`
+     - `src/app/services/pdf_uploads.py`
+     - `src/app/api/routes.py`
+4. Existing OCR/header work from the prior session remains in place
+   - scanned/image-only PDFs can produce document header hints
+   - filename parsing is still part of header extraction
 
-What was completed in the last work session:
-1. Added OCR fallback for scanned/image-only PDFs in src/app/services/pdf_intake.py
-2. Added document_info to PDF intake responses in src/app/schemas.py
-3. Passed the original uploaded filename through the API so header parsing can use the real filename
-4. Updated src/app/services/pdf_uploads.py to return document header info
-5. Updated frontend/app.js so upload intake can prefill:
-   - customer name
-   - phone number if found
-   - address
-   - notes summary
-6. If no rows are extracted, the UI now falls back toward manual builder instead of appearing to do nothing
-7. Added friendlier manual calculation error messages
-8. Hardened src/app/services/template_pricing.py so malformed CSV rows do not crash the calculator
-9. Stabilized local startup by removing auto-reload from the default startup path
+Important current behavior:
+- Schedule-heavy PDFs can sometimes extract rows plus partial header info
+- Rough copies often produce useful header hints but few or no rows
+- Image/photo intake now works, but currently tends to produce only weak OCR header hints such as a project/title name
+- Localhost does not automatically reuse an existing WorkPool browser session; users still sign in explicitly in the app for now
 
-Known current issues / priorities:
-1. OCR/header extraction is only partially working
-   - it can pull some project/customer/address hints from rough-copy PDFs
-   - it is not yet reliably detecting opening rows from rough copies
-2. Manual builder UX still needs work
-   - clearer workflow
-   - better visibility around what to enter
-3. Upload UX is still confusing
-   - selecting a file only sets “Latest file”
-   - user must still click the extract button
-   - likely needs a clearer “Read Document” style CTA and better status feedback
-4. Extraction should be tuned using real sample files from:
-   G:\Profile\My Pictures\FRONT OF HOUSE CALCULATOR-SAMPE PICS
-5. The app should eventually handle:
-   - rough copies
-   - hand-drawn marked-up pages
-   - text documents
-   - schedules
-   - architectural drawings/plans
-6. Longer term:
-   - persistent quote/history storage
-   - historical quote reference system for non-standard sizes
-   - better PDF export
-   - production auth
+Current priorities:
+1. Improve OCR-to-header extraction for image and rough-copy files
+   - especially customer name
+   - phone number
+   - address/site
+   - project/job name
+2. Improve row extraction from rough copies and scanned schedules
+3. Validate WorkPool login against real environment configuration
+   - expected env vars:
+     - `WORKPOOL_BASE_URL`
+     - `WORKPOOL_WP_ID`
+4. Keep the front-of-house workflow practical and obvious for non-technical staff
 
 Important files to review first:
-- src/app/services/pdf_intake.py
-- src/app/services/pdf_uploads.py
-- src/app/services/template_pricing.py
-- src/app/api/routes.py
-- src/app/schemas.py
-- frontend/app.js
-- start.ps1
-- pyproject.toml
+- `src/app/services/workpool_auth.py`
+- `src/app/services/pdf_intake.py`
+- `src/app/services/pdf_uploads.py`
+- `src/app/api/routes.py`
+- `src/app/schemas.py`
+- `src/app/dependencies.py`
+- `frontend/index.html`
+- `frontend/app.js`
+- `frontend/styles.css`
+- `start.ps1`
 
-Observed sample behavior:
-- “Novio Court Unit 03 - Table View - Blight Rental Company RC - Amended 14.04.2026 Stephen.pdf”
-  can now produce document_info roughly like:
-  - customer_name: Blight Rental Company
-  - address: Table View
-  - project_name: Novio Court Unit 03
-  but may still return zero opening rows
+Representative sample behavior observed:
+- `Novio Court Unit 03 - Table View - Blight Rental Company RC - Amended 14.04.2026 Stephen.pdf`
+  - useful header extraction:
+    - customer: `Blight Rental Company`
+    - project: `Novio Court Unit 03`
+    - address: `Table View`
+  - but zero opening rows
+- `Johan Theron - Job Bowen RC - PHASE 2 - Amended 20.04.2026 Aletta.pdf`
+  - extracted one review row:
+    - `D19`
+    - `1300 x 2930`
+    - mapped to `Shopfront`
+  - header summary roughly `Johan Theron | Bowen`
+- image-based samples such as `Tandi-....jpg`
+  - accepted by the intake route
+  - OCR runs
+  - currently mostly produce a weak title/project match and no rows
 
 What to do next:
-1. Inspect the current repo state
-2. Run the app locally
-3. Test the upload flow against the sample documents
-4. Improve rough-copy extraction and opening detection
-5. Improve manual builder usability
-6. Improve upload/extract UI clarity
-7. Keep changes practical and stable for local desktop use
-
-Please continue from the latest pushed state without reverting the recent rough-copy OCR, header autofill, startup stability, or template-loader changes.
+1. Pull latest `main`
+2. Run `start.ps1`
+3. Test mixed files from:
+   `G:\Profile\My Pictures\FRONT OF HOUSE CALCULATOR-SAMPE PICS`
+4. Focus on improving real-world mixed-bag intake quality without destabilizing the quoting flow
+5. Preserve the WorkPool-first auth direction unless a better deployment-compatible approach emerges
 ```
-

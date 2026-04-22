@@ -1,14 +1,17 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 
 from app.dependencies import (
     get_calculation_service,
     get_product_service,
     get_quote_service,
+    get_workpool_auth_service,
 )
 from app.schemas import (
+    AuthSessionResponse,
+    AuthUserResponse,
     CalculatorOptionsResponse,
     CalculationRequest,
     CalculationResponse,
@@ -19,19 +22,66 @@ from app.schemas import (
     QuoteResponse,
     QuoteSummaryResponse,
     SystemGroupsResponse,
+    WorkPoolLoginRequest,
 )
 from app.services.calculation import CalculationService, CatalogLookupError
-from app.services.pdf_uploads import PdfIntakeUnavailableError, extract_pdf_upload_rows
+from app.services.pdf_uploads import PdfIntakeUnavailableError, SUPPORTED_INTAKE_EXTENSIONS, extract_pdf_upload_rows
 from app.services.products import ProductNotFoundError, ProductService
 from app.services.quotes import QuoteNotFoundError, QuoteService
+from app.services.workpool_auth import WorkPoolAuthError, WorkPoolAuthService
 
 
 api_router = APIRouter(prefix="/api")
+SESSION_COOKIE_NAME = "foh_session"
 
 
 @api_router.get("/health")
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@api_router.get("/auth/me", response_model=AuthSessionResponse)
+def auth_me(
+    request: Request,
+    service: WorkPoolAuthService = Depends(get_workpool_auth_service),
+) -> AuthSessionResponse:
+    session = service.get_session(request.cookies.get(SESSION_COOKIE_NAME))
+    if not session:
+        return AuthSessionResponse(authenticated=False)
+    return AuthSessionResponse(authenticated=True, user=serialise_auth_user(session.user))
+
+
+@api_router.post("/auth/workpool/login", response_model=AuthSessionResponse)
+def workpool_login(
+    payload: WorkPoolLoginRequest,
+    response: Response,
+    service: WorkPoolAuthService = Depends(get_workpool_auth_service),
+) -> AuthSessionResponse:
+    try:
+        session = service.login(payload.username, payload.password)
+    except WorkPoolAuthError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=session.session_id,
+        httponly=True,
+        samesite="lax",
+        secure=False,
+        max_age=60 * 60 * 12,
+    )
+    return AuthSessionResponse(authenticated=True, user=serialise_auth_user(session.user))
+
+
+@api_router.post("/auth/logout", response_model=AuthSessionResponse)
+def workpool_logout(
+    request: Request,
+    response: Response,
+    service: WorkPoolAuthService = Depends(get_workpool_auth_service),
+) -> AuthSessionResponse:
+    service.logout(request.cookies.get(SESSION_COOKIE_NAME))
+    response.delete_cookie(SESSION_COOKIE_NAME)
+    return AuthSessionResponse(authenticated=False)
 
 
 @api_router.get("/catalog/system-groups", response_model=SystemGroupsResponse)
@@ -47,12 +97,16 @@ def list_calculator_options(service: ProductService = Depends(get_product_servic
 @api_router.post("/pdf-intake", response_model=PdfIntakeResponse)
 async def intake_pdf(file: UploadFile = File(...)) -> PdfIntakeResponse:
     filename = file.filename or "drawing.pdf"
-    if not filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please upload a PDF drawing.")
+    suffix = Path(filename).suffix.lower()
+    if suffix not in SUPPORTED_INTAKE_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please upload a PDF, JPG, JPEG, PNG, JFIF, BMP, TIFF, or WEBP file.",
+        )
 
     temp_path: Path | None = None
     try:
-        with NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        with NamedTemporaryFile(delete=False, suffix=suffix or ".bin") as temp_file:
             temp_file.write(await file.read())
             temp_path = Path(temp_file.name)
         payload = extract_pdf_upload_rows(temp_path, original_filename=filename)
@@ -121,3 +175,13 @@ def get_quote(
         return service.get_quote(quote_id)
     except QuoteNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+def serialise_auth_user(user) -> AuthUserResponse:
+    return AuthUserResponse(
+        username=user.username,
+        display_name=user.display_name,
+        email=user.email,
+        resource_id=user.resource_id,
+        wp_id=user.wp_id,
+    )

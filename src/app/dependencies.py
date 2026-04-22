@@ -4,6 +4,7 @@ from app.repositories import InMemoryProductRepository, InMemoryQuoteRepository
 from app.services.calculation import CalculationService, HybridCalculationEngine
 from app.services.products import ProductService
 from app.services.quotes import QuoteService
+from app.services.workpool_auth import WorkPoolAuthService
 
 
 @lru_cache
@@ -29,3 +30,8 @@ def get_calculation_service() -> CalculationService:
 @lru_cache
 def get_quote_service() -> QuoteService:
     return QuoteService(get_quote_repository())
+
+
+@lru_cache
+def get_workpool_auth_service() -> WorkPoolAuthService:
+    return WorkPoolAuthService()
