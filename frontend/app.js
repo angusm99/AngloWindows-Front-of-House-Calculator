@@ -186,7 +186,7 @@ function bindElements() {
 }
 
 function bindEvents() {
-  elements.heroUploadButton.addEventListener("click", () => openUploadFlow(false));
+  elements.heroUploadButton.addEventListener("click", () => openUploadFlow(true));
   elements.heroManualButton.addEventListener("click", openManualBuilder);
   elements.tabBuilder.addEventListener("click", () => setActiveTab("builder"));
   elements.tabSaved.addEventListener("click", () => setActiveTab("saved"));

@@ -177,16 +177,6 @@ class WorkPoolAuthService:
                 raise WorkPoolAuthError(response)
             return
 
-    def _post_json(self, opener: request.OpenerDirector, path: str, payload: dict[str, Any]) -> Any:
-        data = json.dumps(payload).encode("utf-8")
-        req = request.Request(
-            f"{self.base_url}{path}",
-            data=data,
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
-            method="POST",
-        )
-        return self._open_and_parse(opener, req)
-
     def _post_form(self, opener: request.OpenerDirector, path: str, payload: dict[str, str]) -> Any:
         data = parse.urlencode(payload).encode("utf-8")
         req = request.Request(
