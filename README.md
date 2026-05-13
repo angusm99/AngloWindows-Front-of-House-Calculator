@@ -43,10 +43,18 @@ Key synced documents are available in `docs/`:
 - `FRONT_OF_HOUSE_CALCULATOR_BRIEF.md`
 - `RECEPTION_USER_GUIDE.md`
 - `FINISHED_GOODS_ANALYSIS.md`
+- `BIZMAN_XLS_IMPORT_SPEC.md`
+
+## Pricing import notes
+
+- New Bizman master price lists should be imported from `XLS` where available.
+- PDFs should be treated as human-readable verification copies, not pricing truth.
+- Imported master values are supply-only; installation costing belongs in a separate formula layer.
+- See `docs/BIZMAN_XLS_IMPORT_SPEC.md` for the current 305 mm casement top-hung and side-hung import mapping.
 
 ## What is still needed for full production parity
 
-- Production Google OAuth configuration
+- Production WorkPool authentication configuration
 - Additional Bizman exports or edge-case pricing rules if required
 - Persistent database-backed storage instead of local/in-memory saves
 - Final branded PDF copy and real outbound email delivery
